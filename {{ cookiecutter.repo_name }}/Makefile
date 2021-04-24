@@ -5,6 +5,9 @@ default: test
 ########################################
 # GLOBALS
 
+DOCKER_REPO = your.registry.url/image-name
+
+GIT_COMMIT = $$(git log -1 --format=%h)
 export PYTHONPATH = .
 
 
@@ -32,3 +35,12 @@ install_deps:
 
 install_deps_dev:
 	pipenv install --dev
+
+
+docker-build:
+	docker build -t $(DOCKER_REPO):latest\
+                     -t $(DOCKER_REPO):$(GIT_COMMIT)\
+		     .
+
+docker-run:
+	docker run -p 5000:5000 -it --rm $(DOCKER_REPO):$(GIT_COMMIT)
