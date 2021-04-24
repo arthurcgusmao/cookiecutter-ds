@@ -5,9 +5,11 @@ default: test
 ########################################
 # GLOBALS
 
-DOCKER_REPO = your.registry.url/image-name
+NAME 	:= your.registry.url/image-name
+TAG 	:= $$(git log -1 --format=%h)
+IMG 	:= ${NAME}:${TAG}
+LATEST	:= ${NAME}:latest
 
-GIT_COMMIT = $$(git log -1 --format=%h)
 export PYTHONPATH = .
 
 
@@ -30,6 +32,8 @@ init:
 	pipenv install --dev flake8 coverage pytest
 
 
+# Install dependencies
+
 install_deps:
 	pipenv install
 
@@ -37,10 +41,17 @@ install_deps_dev:
 	pipenv install --dev
 
 
-docker-build:
-	docker build -t $(DOCKER_REPO):latest\
-                     -t $(DOCKER_REPO):$(GIT_COMMIT)\
-		     .
+# Docker commands
 
-docker-run:
-	docker run -p 5000:5000 -it --rm $(DOCKER_REPO):$(GIT_COMMIT)
+build:
+	docker build -t ${IMG} .
+	docker tag ${IMG} ${LATEST}
+
+run:
+	docker run -p 5000:5000 -it --rm ${IMG}
+
+login:
+	docker log -u ${DOCKER_USER} -p ${DOCKER_PASS}
+
+push:
+	docker push ${NAME}
